@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, ForeignKey
-from datetime import datetime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -37,7 +36,7 @@ class User(Base):
     )
 
     verification_code = Column(
-        String(10),
+        String(6),
         nullable=True
     )
 
@@ -47,7 +46,7 @@ class User(Base):
     )
 
     reset_code_expires_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=True
     )
 
