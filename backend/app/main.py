@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
 from .database import Base, engine
-from app.models import User
 from . import models
 from app.routes.auth import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware

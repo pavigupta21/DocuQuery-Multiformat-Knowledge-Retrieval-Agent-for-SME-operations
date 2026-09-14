@@ -3,7 +3,7 @@ import random
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.email import send_verification_otp
 from app.models import User
 from app.schemas import UserCreate, UserLogin, UserResponse, VerifyEmail, ForgotPasswordRequest, ResetPasswordRequest
@@ -14,16 +14,6 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
-
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @router.post(
     "/register",
