@@ -26,6 +26,11 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

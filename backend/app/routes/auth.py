@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.email import send_verification_otp
 from app.models import User
-from app.schemas import UserCreate, UserLogin, UserResponse, VerifyEmail, ForgotPasswordRequest, ResetPasswordRequest
-from app.security import hash_password, verify_password
+from app.schemas import UserCreate, UserLogin, UserResponse,LoginResponse, VerifyEmail, ForgotPasswordRequest, ResetPasswordRequest
+from app.security import hash_password, verify_password, create_access_token
 from datetime import datetime, timedelta, timezone
 
 router = APIRouter(
@@ -91,7 +91,7 @@ def verify_email(
     return user
 
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login", response_model=LoginResponse)
 def login_user(
     credentials: UserLogin,
     db: Session = Depends(get_db)
@@ -120,7 +120,18 @@ def login_user(
             detail="Email is not verified yet. Please enter the 6-digit code sent to your email."
         )
 
-    return user
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user,
+    }
 
 
 @router.post("/forgot-password")
