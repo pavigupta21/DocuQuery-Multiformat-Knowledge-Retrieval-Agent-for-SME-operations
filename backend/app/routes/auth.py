@@ -9,6 +9,7 @@ from app.models import User
 from app.schemas import UserCreate, UserLogin, UserResponse,LoginResponse, VerifyEmail, ForgotPasswordRequest, ResetPasswordRequest
 from app.security import hash_password, verify_password, create_access_token
 from datetime import datetime, timedelta, timezone
+from app.dependencies import get_current_user
 
 router = APIRouter(
     prefix="/auth",
@@ -205,3 +206,9 @@ def reset_password(
     return {
         "message": "Password reset successfully. You can now log in."
     }
+
+@router.get("/me", response_model=UserResponse)
+def get_logged_in_user(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user

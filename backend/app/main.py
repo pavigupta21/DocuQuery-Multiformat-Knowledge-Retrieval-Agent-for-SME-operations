@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .database import Base, engine
 from . import models
 from app.routes.auth import router as auth_router
+from app.routes.documents import router as documents_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(auth_router)
+app.include_router(documents_router)
 
 
 @app.get("/")
