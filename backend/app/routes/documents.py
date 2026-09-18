@@ -5,10 +5,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models import User, Document
+from app.models import User, Document, DocumentChunk
 from app.services.document_storage import upload_file_to_r2
 from app.services.chunk_storage import process_and_store_pdf
 from app.schemas import DocumentResponse
+from app.services.document_processing import (
+    process_pdf,
+    process_excel,
+    process_txt,
+    process_eml
+)
 from app.services.document_storage import (
     upload_file_to_r2,
     delete_file_from_r2,
@@ -59,12 +65,39 @@ async def upload_document(
     db.refresh(document)
     chunk_count = 0
 
+   
+    chunk_count = 0
+
     if file.content_type == "application/pdf":
-        chunk_count = process_and_store_pdf(
-            db=db,
-            document=document,
-            file_bytes=file_bytes,
+        chunks = process_pdf(file_bytes)
+
+    elif file.content_type in [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+    ]:
+        chunks = process_excel(file_bytes)
+
+    elif file.content_type == "text/plain":
+        chunks = process_txt(file_bytes)
+
+    elif file.content_type == "message/rfc822":
+        chunks = process_eml(file_bytes)
+
+    else:
+        chunks = []
+
+    for index, chunk in enumerate(chunks):
+        document_chunk = DocumentChunk(
+            document_id=document.id,
+            chunk_index=index,
+            content=chunk,
         )
+        db.add(document_chunk)
+
+    chunk_count = len(chunks)
+
+    document.status = "processed" if chunks else "uploaded"
+    db.commit()
 
     return {
         "message": "Document uploaded successfully",
